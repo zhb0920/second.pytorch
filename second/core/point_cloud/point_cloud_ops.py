@@ -1,5 +1,5 @@
+# -*- coding: UTF-8 -*-
 import time
-
 import numba
 import numpy as np
 
@@ -123,7 +123,7 @@ def points_to_voxel(points,
     Args:
         points: [N, ndim] float tensor. points[:, :3] contain xyz points and
             points[:, 3:] contain other information such as reflectivity.
-        voxel_size: [3] list/tuple or array, float. xyz, indicate voxel size
+        voxel_size: [3] list/tuple or array, float. xyz, indicate voxel size [0.2,0.2,0.4]
         coors_range: [6] list/tuple or array, float. indicate voxel range.
             format: xyzxyz, minmax
         max_points: int. indicate maximum points contained in a voxel.
@@ -151,8 +151,8 @@ def points_to_voxel(points,
     # don't create large array in jit(nopython=True) code.
     num_points_per_voxel = np.zeros(shape=(max_voxels, ), dtype=np.int32)
     voxels = np.zeros(
-        shape=(max_voxels, max_points, points.shape[-1]), dtype=points.dtype)
-    coors = np.zeros(shape=(max_voxels, 3), dtype=np.int32)
+        shape=(max_voxels, max_points, points.shape[-1]), dtype=points.dtype) #shape=[K,T,4]
+    coors = np.zeros(shape=(max_voxels, 3), dtype=np.int32) #体素坐标
     if reverse_index:
         voxel_num = _points_to_voxel_reverse_kernel(
             points, voxel_size, coors_range, num_points_per_voxel,

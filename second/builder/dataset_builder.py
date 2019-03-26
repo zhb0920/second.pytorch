@@ -50,9 +50,9 @@ def build(input_reader_config,
     if not isinstance(input_reader_config, input_reader_pb2.InputReader):
         raise ValueError('input_reader_config not of type '
                          'input_reader_pb2.InputReader.')
-    generate_bev = model_config.use_bev
-    without_reflectivity = model_config.without_reflectivity
-    num_point_features = model_config.num_point_features
+    generate_bev = model_config.use_bev #false
+    without_reflectivity = model_config.without_reflectivity #false in car.config
+    num_point_features = model_config.num_point_features #4
     out_size_factor = model_config.rpn.layer_strides[0] // model_config.rpn.upsample_strides[0]
 
     cfg = input_reader_config
