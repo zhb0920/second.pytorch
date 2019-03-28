@@ -18,7 +18,7 @@ def build(box_coder_config):
         ValueError: when using an unsupported input data type.
     """
     box_coder_type = box_coder_config.WhichOneof('box_coder')
-    if box_coder_type == 'ground_box3d_coder':
+    if box_coder_type == 'ground_box3d_coder':# this in car.config
         cfg = box_coder_config.ground_box3d_coder
         return GroundBox3dCoderTorch(cfg.linear_dim, cfg.encode_angle_vector)
     elif box_coder_type == 'bev_box_coder':

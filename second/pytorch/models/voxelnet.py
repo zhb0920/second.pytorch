@@ -79,11 +79,9 @@ class VFELayer(nn.Module):
         # [K, T, 7] tensordot [7, units] = [K, T, units]
         voxel_count = inputs.shape[1]
         x = self.linear(inputs)
-        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2,
-                                                               1).contiguous()
+        x = self.norm(x.permute(0, 2, 1).contiguous()).permute(0, 2,1).contiguous()
         pointwise = F.relu(x)
         # [K, T, units]
-
         aggregated = torch.max(pointwise, dim=1, keepdim=True)[0]
         # [K, 1, units]
         repeated = aggregated.repeat(1, voxel_count, 1)
@@ -121,18 +119,33 @@ class VoxelFeatureExtractor(nn.Module):
         # var_torch_init(self.linear.bias)
         self.norm = BatchNorm1d(num_filters[1])
 
-    def forward(self, features, num_voxels):
-        # features: [concated_num_points, num_voxel_size, 3(4)]
-        # num_voxels: [concated_num_points]
+    def forward(self, features, num_voxels,coors):
+        # features: [N, T, 3(4)]
+        # num_voxels: [N]
         points_mean = features[:, :, :3].sum(
             dim=1, keepdim=True) / num_voxels.type_as(features).view(-1, 1, 1)
         features_relative = features[:, :, :3] - points_mean
+        ##############################  my code
+        z_feature=torch.zeros(features[:, :,1].shape)
+        z_feature=coors[:,1]*0.4+0.2
+        z_feature=z_feature.view([-1,1]).expand([coors.shape[0],35])
+        y_feature=torch.zeros(features[:, :,1].shape)
+        y_feature=coors[:,2]*0.2+40
+        y_feature=z_feature.view([-1,1]).expand([coors.shape[0],35])
+        x_feature=torch.zeros(features[:, :,1].shape)
+        x_feature=coors[:,3]*0.2
+        z_feature=z_feature.view([-1,1]).expand([coors.shape[0],35])
+        voxel_center=features = torch.cat([z_feature.view([coors.shape[0],35],1),
+                                            y_feature.view([coors.shape[0],35],1),
+                                            x_feature.view([coors.shape[0],35],1)], dim=-1)
+        add_feature=features[:, :, :3]-voxel_center.view([])
+        ##############################
         if self._with_distance:
             points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True)
             features = torch.cat(
                 [features, features_relative, points_dist], dim=-1)
         else:
-            features = torch.cat([features, features_relative], dim=-1)
+            features = torch.cat([features, features_relative,add_feature], dim=-1)
         voxel_count = features.shape[1]
         mask = get_paddings_indicator(num_voxels, voxel_count, axis=0)
         mask = torch.unsqueeze(mask, -1).type_as(features)
@@ -174,8 +187,7 @@ class VoxelFeatureExtractorV2(nn.Module):
         self._with_distance = with_distance
 
         num_filters = [num_input_features] + num_filters
-        filters_pairs = [[num_filters[i], num_filters[i + 1]]
-                         for i in range(len(num_filters) - 1)]
+        filters_pairs = [[num_filters[i], num_filters[i + 1]]for i in range(len(num_filters) - 1)]
         self.vfe_layers = nn.ModuleList(
             [VFELayer(i, o, use_norm) for i, o in filters_pairs])
         self.linear = Linear(num_filters[-1], num_filters[-1])
@@ -666,7 +678,7 @@ class VoxelNet(nn.Module):
         # features: [num_voxels, max_num_points_per_voxel, 7]
         # num_points: [num_voxels]
         # coors: [num_voxels, 4]
-        voxel_features = self.voxel_feature_extractor(voxels, num_points)
+        voxel_features = self.voxel_feature_extractor(voxels, num_points,coors)
         if self._use_sparse_rpn:
             preds_dict = self.sparse_rpn(voxel_features, coors, batch_size_dev)
         else:

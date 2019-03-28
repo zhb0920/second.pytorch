@@ -119,15 +119,15 @@ def train(config_path,
     ######################
     # BUILD TARGET ASSIGNER
     ######################
-    bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
+    bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]  #检测范围
     box_coder = box_coder_builder.build(model_cfg.box_coder)
-    target_assigner_cfg = model_cfg.target_assigner
+    target_assigner_cfg = model_cfg.target_assigner 
     target_assigner = target_assigner_builder.build(target_assigner_cfg,
                                                     bv_range, box_coder)
     ######################
     # BUILD NET
     ######################
-    center_limit_range = model_cfg.post_center_limit_range
+    center_limit_range = model_cfg.post_center_limit_range  # [0, -40, -5.0, 70.4, 40, 5.0] in car.config
     net = second_builder.build(model_cfg, voxel_generator, target_assigner)
     device = None
     if torch.cuda.is_available():
@@ -152,7 +152,7 @@ def train(config_path,
         net.metrics_to_float()
         net.convert_norm_to_float(net)
     optimizer = optimizer_builder.build(optimizer_cfg, net.parameters())
-    if train_cfg.enable_mixed_precision:
+    if train_cfg.enable_mixed_precision:   #混合精度
         loss_scale = train_cfg.loss_scale_factor
         mixed_optimizer = torchplus.train.MixedPrecisionWrapper(
             optimizer, loss_scale)
@@ -183,7 +183,7 @@ def train(config_path,
         voxel_generator=voxel_generator,
         target_assigner=target_assigner)
 
-    def _worker_init_fn(worker_id):
+    def _worker_init_fn(worker_id):  #生成随机种子
         time_seed = np.array(time.time(), dtype=np.int32)
         np.random.seed(time_seed + worker_id)
         print(f"WORKER {worker_id} seed:", np.random.get_state()[1][0])
@@ -217,7 +217,7 @@ def train(config_path,
     writer = SummaryWriter(str(summary_dir))
 
     total_step_elapsed = 0
-    remain_steps = train_cfg.steps - net.get_global_step()
+    remain_steps = train_cfg.steps - net.get_global_step() #剩余步数
     t = time.time()
     ckpt_start_time = t
 
@@ -238,7 +238,7 @@ def train(config_path,
                 lr_scheduler.step()
                 try:
                     example = next(data_iter)
-                except StopIteration:
+                except StopIteration: #最后一个batch
                     print("end epoch")
                     if clear_metrics_every_epoch:
                         net.clear_metrics()
@@ -265,9 +265,9 @@ def train(config_path,
                 if train_cfg.enable_mixed_precision:
                     loss *= loss_scale
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
+                torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0) #解决梯度爆炸
                 mixed_optimizer.step()
-                mixed_optimizer.zero_grad()
+                mixed_optimizer.zero_grad() #梯度清零
                 net.update_global_step()
                 net_metrics = net.update_metrics(cls_loss_reduced,
                                                  loc_loss_reduced, cls_preds,
@@ -310,6 +310,7 @@ def train(config_path,
                     metrics["lr"] = float(
                         mixed_optimizer.param_groups[0]['lr'])
                     metrics["image_idx"] = example['image_idx'][0]
+                    #tensorboard summary
                     flatted_metrics = flat_nested_json_dict(metrics)
                     flatted_summarys = flat_nested_json_dict(metrics, "/")
                     for k, v in flatted_summarys.items():
@@ -334,7 +335,7 @@ def train(config_path,
                     print(log_str, file=logf)
                     print(log_str)
                 ckpt_elasped_time = time.time() - ckpt_start_time
-                if ckpt_elasped_time > train_cfg.save_checkpoints_secs:
+                if ckpt_elasped_time > train_cfg.save_checkpoints_secs:  #超过半小时保存
                     torchplus.train.save_models(model_dir, [net, optimizer],
                                                 net.get_global_step())
                     ckpt_start_time = time.time()
@@ -380,7 +381,7 @@ def train(config_path,
             print(
                 f'generate label finished({sec_per_ex:.2f}/s). start eval:',
                 file=logf)
-            gt_annos = [
+            gt_annos = [            #groundtruth
                 info["annos"] for info in eval_dataset.dataset.kitti_infos
             ]
             if not pickle_result:
@@ -388,7 +389,7 @@ def train(config_path,
             if device.type == 'cpu':
                 print("Evaluation only support gpu.")
             else:
-                result = get_official_eval_result(gt_annos, dt_annos, class_names)
+                result = get_official_eval_result(gt_annos, dt_annos, class_names)   #评估结果
                 print(result, file=logf)
                 print(result)
                 writer.add_text('eval_result', result, global_step)
@@ -450,7 +451,7 @@ def _predict_kitti_to_file(net,
                     if (np.any(box_lidar[:3] < limit_range[:3])
                             or np.any(box_lidar[:3] > limit_range[3:])):
                         continue
-                bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
+                bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])  #越界处理
                 bbox[:2] = np.maximum(bbox[:2], [0, 0])
                 result_dict = {
                     'name': class_names[int(label)],
