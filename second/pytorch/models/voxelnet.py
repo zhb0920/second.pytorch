@@ -112,7 +112,7 @@ class VoxelFeatureExtractor(nn.Module):
         if with_distance:
             num_input_features += 1
         self._with_distance = with_distance
-        self.vfe1 = VFELayer(num_input_features, num_filters[0], use_norm)
+        self.vfe1 = VFELayer(num_input_features+3, num_filters[0], use_norm)
         self.vfe2 = VFELayer(num_filters[0], num_filters[1], use_norm)
         self.linear = Linear(num_filters[1], num_filters[1])
         # var_torch_init(self.linear.weight)
@@ -126,19 +126,20 @@ class VoxelFeatureExtractor(nn.Module):
             dim=1, keepdim=True) / num_voxels.type_as(features).view(-1, 1, 1)
         features_relative = features[:, :, :3] - points_mean
         ##############################  my code
-        z_feature=torch.zeros(features[:, :,1].shape)
-        z_feature=coors[:,1]*0.4+0.2
-        z_feature=z_feature.view([-1,1]).expand([coors.shape[0],35])
-        y_feature=torch.zeros(features[:, :,1].shape)
-        y_feature=coors[:,2]*0.2+40
-        y_feature=z_feature.view([-1,1]).expand([coors.shape[0],35])
-        x_feature=torch.zeros(features[:, :,1].shape)
-        x_feature=coors[:,3]*0.2
-        z_feature=z_feature.view([-1,1]).expand([coors.shape[0],35])
-        voxel_center=features = torch.cat([z_feature.view([coors.shape[0],35],1),
-                                            y_feature.view([coors.shape[0],35],1),
-                                            x_feature.view([coors.shape[0],35],1)], dim=-1)
+        z_feature=coors[:,1].float()
+        z_feature=z_feature*0.4+0.2
+        z_feature=z_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
+        y_feature=coors[:,2].float()
+        y_feature=y_feature*0.2+40
+        y_feature=y_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
+        x_feature=coors[:,3].float()
+        x_feature=x_feature*0.2
+        x_feature=x_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
+        #print(x_feature)
+        voxel_center = torch.cat([z_feature.view([coors.shape[0],35,1]), y_feature.view([coors.shape[0],35,1]),x_feature.view([coors.shape[0],35,1])], dim=-1)
+        #print(voxel_center)
         add_feature=features[:, :, :3]-voxel_center
+        #print(add_feature)
         ##############################
         if self._with_distance:
             points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True)
