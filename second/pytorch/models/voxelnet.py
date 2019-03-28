@@ -138,7 +138,7 @@ class VoxelFeatureExtractor(nn.Module):
         voxel_center=features = torch.cat([z_feature.view([coors.shape[0],35],1),
                                             y_feature.view([coors.shape[0],35],1),
                                             x_feature.view([coors.shape[0],35],1)], dim=-1)
-        add_feature=features[:, :, :3]-voxel_center.view([])
+        add_feature=features[:, :, :3]-voxel_center
         ##############################
         if self._with_distance:
             points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True)
