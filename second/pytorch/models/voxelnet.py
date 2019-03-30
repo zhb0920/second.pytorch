@@ -127,13 +127,13 @@ class VoxelFeatureExtractor(nn.Module):
         features_relative = features[:, :, :3] - points_mean
         ##############################  my code
         z_feature=coors[:,1].float()
-        z_feature=z_feature*0.4+0.2
+        z_feature=z_feature*0.4-3+0.2
         z_feature=z_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
         y_feature=coors[:,2].float()
-        y_feature=y_feature*0.2+40
+        y_feature=y_feature*0.2-40+0.1
         y_feature=y_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
         x_feature=coors[:,3].float()
-        x_feature=x_feature*0.2
+        x_feature=x_feature*0.2+0.1
         x_feature=x_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
         #print(x_feature)
         voxel_center = torch.cat([z_feature.view([coors.shape[0],35,1]), y_feature.view([coors.shape[0],35,1]),x_feature.view([coors.shape[0],35,1])], dim=-1)
