@@ -1,2 +1,2 @@
 
-python second/pytorch/train.py train --config_path=/userhome/configs/car.config --model_dir=/userhome/debug/car_0328
+python second/pytorch/train.py train --config_path=./second/configs/car.config --model_dir=./models/debug/car_0411
