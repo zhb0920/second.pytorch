@@ -238,7 +238,7 @@ def train(config_path,
                 lr_scheduler.step()
                 try:
                     example = next(data_iter)
-                except StopIteration: #最后一个batch
+                except StopIteration: #最后一个epoch
                     print("end epoch")
                     if clear_metrics_every_epoch:
                         net.clear_metrics()

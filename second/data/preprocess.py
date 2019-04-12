@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 import pathlib
 import pickle
 import time
@@ -95,7 +96,7 @@ def prep_pointcloud(input_dict,
     P2 = input_dict["P2"]
     unlabeled_training = unlabeled_db_sampler is not None
     image_idx = input_dict["image_idx"]
-
+    #参考2D检测
     if reference_detections is not None:
         C, R, T = box_np_ops.projection_matrix_to_CRT_kitti(P2)
         frustums = box_np_ops.get_frustum_v2(reference_detections, C)
@@ -106,11 +107,11 @@ def prep_pointcloud(input_dict,
         surfaces = box_np_ops.corner_to_surfaces_3d_jit(frustums)
         masks = points_in_convex_polygon_3d_jit(points, surfaces)
         points = points[masks.any(-1)]
-
+    #去除视野外的点
     if remove_outside_points and not lidar_input:
         image_shape = input_dict["image_shape"]
-        points = box_np_ops.remove_outside_points(points, rect, Trv2c, P2,
-                                                  image_shape)
+        points = box_np_ops.remove_outside_points(points, rect, Trv2c, P2,image_shape)
+    #删除环境
     if remove_environment is True and training:
         selected = kitti.keep_arrays_by_name(gt_names, class_names)
         gt_boxes = gt_boxes[selected]
@@ -127,8 +128,9 @@ def prep_pointcloud(input_dict,
         difficulty = difficulty[selected]
         if group_ids is not None:
             group_ids = group_ids[selected]
-
+        print('befor={}'.format(gt_boxes.shape))
         gt_boxes = box_np_ops.box_camera_to_lidar(gt_boxes, rect, Trv2c)
+        print('after={}'.format(gt_boxes.shape))
         if remove_unknown:
             remove_mask = difficulty == -1
             """
@@ -201,7 +203,7 @@ def prep_pointcloud(input_dict,
             group_ids = group_ids[gt_boxes_mask]
         gt_classes = np.array(
             [class_names.index(n) + 1 for n in gt_names], dtype=np.int32)
-
+        #数据增强
         gt_boxes, points = prep.random_flip(gt_boxes, points)
         gt_boxes, points = prep.global_rotation(
             gt_boxes, points, rotation=global_rotation_noise)
@@ -329,6 +331,7 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
 
     if 'annos' in info:
         annos = info['annos']
+        print('annos.shape={}'.format(annos.shape[0]))
         # we need other objects to avoid collision when sample
         annos = kitti.remove_dontcare(annos)
         loc = annos["location"]
