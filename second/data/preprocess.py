@@ -128,9 +128,7 @@ def prep_pointcloud(input_dict,
         difficulty = difficulty[selected]
         if group_ids is not None:
             group_ids = group_ids[selected]
-        print('befor={}'.format(gt_boxes.shape))
         gt_boxes = box_np_ops.box_camera_to_lidar(gt_boxes, rect, Trv2c)
-        print('after={}'.format(gt_boxes.shape))
         if remove_unknown:
             remove_mask = difficulty == -1
             """
