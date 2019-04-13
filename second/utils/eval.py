@@ -770,7 +770,7 @@ def get_official_eval_result_v1(gt_annos, dt_annos, current_class):
         # mAP: [num_class, num_diff, num_minoverlap]
         result += print_str(
             (f"{class_to_name[current_class]} "
-             "AP@{:.2f}, {:.2f}, {:.2f}:".format(*mAP[:, current_class])))
+             "offical_v1_AP@{:.2f}, {:.2f}, {:.2f}:".format(*mAP[:, current_class])))
         result += print_str((f"bbox AP:{mAPbbox[0]:.2f}, "
                              f"{mAPbbox[1]:.2f}, "
                              f"{mAPbbox[2]:.2f}"))
@@ -833,7 +833,7 @@ def get_official_eval_result(gt_annos, dt_annos, current_classes, difficultys=[0
         for i in range(min_overlaps.shape[0]):
             result += print_str(
                 (f"{class_to_name[curcls]} "
-                 "AP@{:.2f}, {:.2f}, {:.2f}:".format(*min_overlaps[i, :, j])))
+                 "official_AP@{:.2f}, {:.2f}, {:.2f}:".format(*min_overlaps[i, :, j])))
             result += print_str((f"bbox AP:{mAPbbox[j, 0, i]:.2f}, "
                                  f"{mAPbbox[j, 1, i]:.2f}, "
                                  f"{mAPbbox[j, 2, i]:.2f}"))
