@@ -306,10 +306,11 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
     """
     # velodyne_path = str(pathlib.Path(root_path) / info['velodyne_path'])
     # velodyne_path += '_reduced'
-    v_path = pathlib.Path(root_path) / info['velodyne_path']
+    v_path = pathlib.Path(root_path)/info['velodyne_path']
+    '''
     v_path = v_path.parent.parent / (
-        v_path.parent.stem + "_reduced") / v_path.name
-
+        v_path.parent.stem + "_reduced")/v_path.name
+    '''
     points = np.fromfile(
         str(v_path), dtype=np.float32,
         count=-1).reshape([-1, num_point_features])
@@ -331,7 +332,7 @@ def _read_and_prep_v9(info, root_path, num_point_features, prep_func):
 
     if 'annos' in info:
         annos = info['annos']
-        print('annos.shape={}'.format(annos.shape[0]))
+        #print('annos.shape={}'.format(annos.shape[0]))
         # we need other objects to avoid collision when sample
         annos = kitti.remove_dontcare(annos)
         loc = annos["location"]

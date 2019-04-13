@@ -234,10 +234,17 @@ def create_groundtruth_database(data_path,
         rect = info['calib/R0_rect']
         P2 = info['calib/P2']
         Trv2c = info['calib/Tr_velo_to_cam']
+        #删除约40000个点
+        '''
         if not lidar_only:
             points = box_np_ops.remove_outside_points(points, rect, Trv2c, P2,
                                                         info["img_shape"])
-
+        '''
+        #####################################
+        bin_name=f"/home/zhb/kitti360/points_debug/{image_idx}.bin"
+        with open(bin_name, 'w') as f:
+            points.tofile(f)
+        #####################################
         annos = info["annos"]
         names = annos["name"]
         bboxes = annos["bbox"]

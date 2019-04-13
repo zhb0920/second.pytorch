@@ -58,7 +58,7 @@ class DataBasePreprocessing:
     def _preprocess(self, db_infos):
         pass
 
-
+#按难度过滤
 class DBFilterByDifficulty(DataBasePreprocessing):
     def __init__(self, removed_difficulties):
         self._removed_difficulties = removed_difficulties
@@ -73,7 +73,7 @@ class DBFilterByDifficulty(DataBasePreprocessing):
             ]
         return new_db_infos
 
-
+#按点数过滤
 class DBFilterByMinNumPoint(DataBasePreprocessing):
     def __init__(self, min_gt_point_dict):
         self._min_gt_point_dict = min_gt_point_dict
