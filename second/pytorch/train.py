@@ -550,7 +550,7 @@ def evaluate(config_path,
              predict_test=False,
              ckpt_path=None,
              ref_detfile=None,
-             pickle_result=True):
+             pickle_result=False):
     model_dir = pathlib.Path(model_dir)
     if predict_test:
         result_name = 'predict_test'
@@ -655,6 +655,7 @@ def evaluate(config_path,
         if pickle_result:
             with open(result_path_step / "result.pkl", 'wb') as f:
                 pickle.dump(dt_annos, f)
+
 
 
 if __name__ == '__main__':

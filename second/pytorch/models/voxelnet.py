@@ -721,9 +721,9 @@ class VoxelNet(nn.Module):
                 encode_background_as_zeros=self._encode_background_as_zeros,
                 box_code_size=self._box_coder.code_size,
             )
-            loc_loss_reduced = loc_loss.sum() / batch_size_dev
+            loc_loss_reduced = loc_loss.sum() / batch_size_dev          #回归loss
             loc_loss_reduced *= self._loc_loss_weight
-            cls_pos_loss, cls_neg_loss = _get_pos_neg_loss(cls_loss, labels)
+            cls_pos_loss, cls_neg_loss = _get_pos_neg_loss(cls_loss, labels)  #分类正负例loss
             cls_pos_loss /= self._pos_cls_weight
             cls_neg_loss /= self._neg_cls_weight
             cls_loss_reduced = cls_loss.sum() / batch_size_dev
