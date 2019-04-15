@@ -335,7 +335,7 @@ def train(config_path,
                     print(log_str, file=logf)
                     print(log_str)
                 ckpt_elasped_time = time.time() - ckpt_start_time
-                if ckpt_elasped_time > train_cfg.save_checkpoints_secs:  #超过半小时保存
+                if ckpt_elasped_time > train_cfg.save_checkpoints_secs:  
                     torchplus.train.save_models(model_dir, [net, optimizer],
                                                 net.get_global_step())
                     ckpt_start_time = time.time()

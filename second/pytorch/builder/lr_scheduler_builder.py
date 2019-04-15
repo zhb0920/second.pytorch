@@ -32,6 +32,12 @@ def build(optimizer_config, optimizer, last_step=-1):
     ValueError: when using an unsupported input data type.
   """
   optimizer_type = optimizer_config.WhichOneof('optimizer')
+  #adabound
+  if optimizer_type == 'adabound_optimizer':
+    config = optimizer_config.adabound_optimizer
+    lr_scheduler = _create_learning_rate_scheduler(config.learning_rate, 
+                                                  optimizer, 
+                                                  last_step=last_step)
 
   if optimizer_type == 'rms_prop_optimizer':
     config = optimizer_config.rms_prop_optimizer

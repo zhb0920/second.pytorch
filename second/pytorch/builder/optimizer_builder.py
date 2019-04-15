@@ -16,6 +16,7 @@
 
 from torchplus.train import learning_schedules
 import torch
+import adabound
 
 
 def build(optimizer_config, params, name=None):
@@ -32,7 +33,12 @@ def build(optimizer_config, params, name=None):
   """
     optimizer_type = optimizer_config.WhichOneof('optimizer')
     optimizer = None
-
+    #adabound
+    optimizer = adabound.AdaBound(params, 
+                                lr=0.002, 
+                                final_lr=0.1)
+    optimizer.name = 'adabound'
+    return optimizer
     if optimizer_type == 'rms_prop_optimizer':
         config = optimizer_config.rms_prop_optimizer
         optimizer = torch.optim.RMSprop(
