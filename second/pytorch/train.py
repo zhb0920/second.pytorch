@@ -1,10 +1,10 @@
 import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 import pathlib
 import pickle
 import shutil
 import time
 from functools import partial
-
 import fire
 import numpy as np
 import torch
@@ -21,6 +21,7 @@ from second.pytorch.builder import (box_coder_builder, input_reader_builder,
                                       second_builder)
 from second.utils.eval import get_coco_eval_result, get_official_eval_result
 from second.utils.progress_bar import ProgressBar
+
 
 
 def _get_pos_neg_loss(cls_loss, labels):
@@ -106,6 +107,7 @@ def train(config_path,
         proto_str = f.read()
         text_format.Merge(proto_str, config)
     shutil.copyfile(config_path, str(model_dir / config_file_bkp))
+
     input_cfg = config.train_input_reader
     eval_input_cfg = config.eval_input_reader
     model_cfg = config.model.second
@@ -212,7 +214,7 @@ def train(config_path,
     logf = open(log_path, 'a')
     logf.write(proto_str)
     logf.write("\n")
-    summary_dir = model_dir / 'summary'
+    summary_dir = model_dir / 'summary' #tensorboard记录
     summary_dir.mkdir(parents=True, exist_ok=True)
     writer = SummaryWriter(str(summary_dir))
 
@@ -238,7 +240,7 @@ def train(config_path,
                 lr_scheduler.step()
                 try:
                     example = next(data_iter)
-                except StopIteration: #最后一个batch
+                except StopIteration: 
                     print("end epoch")
                     if clear_metrics_every_epoch:
                         net.clear_metrics()

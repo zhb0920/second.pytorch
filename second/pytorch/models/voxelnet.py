@@ -108,7 +108,7 @@ class VoxelFeatureExtractor(nn.Module):
             BatchNorm1d = Empty
             Linear = change_default_args(bias=True)(nn.Linear)
         assert len(num_filters) == 2
-        num_input_features += 3  # add mean features
+        #num_input_features += 3  # add mean features
         if with_distance:
             num_input_features += 1
         self._with_distance = with_distance
@@ -125,7 +125,7 @@ class VoxelFeatureExtractor(nn.Module):
         points_mean = features[:, :, :3].sum(
             dim=1, keepdim=True) / num_voxels.type_as(features).view(-1, 1, 1)
         features_relative = features[:, :, :3] - points_mean
-        ##############################  my code
+        ''' my code
         z_feature=coors[:,1].float()
         z_feature=z_feature*0.4-3+0.2
         z_feature=z_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
@@ -134,19 +134,17 @@ class VoxelFeatureExtractor(nn.Module):
         y_feature=y_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
         x_feature=coors[:,3].float()
         x_feature=x_feature*0.2+0.1
-        x_feature=x_feature.view([coors.shape[0],1]).expand([coors.shape[0],35])
-        #print(x_feature)
+        x_feature=x_feature.view([coors.shape[0],1]).expand([coors.shape[0],35]) 
         voxel_center = torch.cat([z_feature.view([coors.shape[0],35,1]), y_feature.view([coors.shape[0],35,1]),x_feature.view([coors.shape[0],35,1])], dim=-1)
         #print(voxel_center)
         add_feature=features[:, :, :3]-voxel_center
-        #print(add_feature)
-        ##############################
+        '''
         if self._with_distance:
             points_dist = torch.norm(features[:, :, :3], 2, 2, keepdim=True)
             features = torch.cat(
                 [features, features_relative, points_dist], dim=-1)
         else:
-            features = torch.cat([features, features_relative,add_feature], dim=-1)
+            features = torch.cat([features, features_relative], dim=-1)
         voxel_count = features.shape[1]
         mask = get_paddings_indicator(num_voxels, voxel_count, axis=0)
         mask = torch.unsqueeze(mask, -1).type_as(features)
