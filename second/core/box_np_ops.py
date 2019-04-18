@@ -571,7 +571,7 @@ def create_anchors_3d_range(feature_size,
         anchors: [*feature_size, num_sizes, num_rots, 7] tensor.
     """
     anchor_range = np.array(anchor_range, dtype)
-    z_centers = np.linspace(
+    z_centers = np.linspace(   #在指定的间隔内返回均匀间隔的数字。
         anchor_range[2], anchor_range[5], feature_size[0], dtype=dtype)
     y_centers = np.linspace(
         anchor_range[1], anchor_range[4], feature_size[1], dtype=dtype)
