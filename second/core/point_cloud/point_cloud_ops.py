@@ -153,7 +153,7 @@ def points_to_voxel(points,
     voxels = np.zeros(
         shape=(max_voxels, max_points, points.shape[-1]), dtype=points.dtype) #shape=[K,T,4]
     coors = np.zeros(shape=(max_voxels, 3), dtype=np.int32) #体素坐标
-    if reverse_index:
+    if reverse_index:   #默认为True
         voxel_num = _points_to_voxel_reverse_kernel(
             points, voxel_size, coors_range, num_points_per_voxel,
             coor_to_voxelidx, voxels, coors, max_points, max_voxels)

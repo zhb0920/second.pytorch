@@ -37,7 +37,7 @@ class TargetAssigner:
             gt_boxes_rbv = gt_boxes[:, [0, 1, 3, 4, 6]]
             return self._region_similarity_calculator.compare(
                 anchors_rbv, gt_boxes_rbv)
-
+        #box编码
         def box_encoding_fn(boxes, anchors):
             return self._box_coder.encode(boxes, anchors)
 
