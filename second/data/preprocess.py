@@ -128,8 +128,8 @@ def prep_pointcloud(input_dict,
         if group_ids is not None:
             group_ids = group_ids[selected]
 
-        gt_boxes = box_np_ops.box_camera_to_lidar(gt_boxes, rect, Trv2c)
-        if remove_unknown:
+        gt_boxes = box_np_ops.box_camera_to_lidar(gt_boxes, rect, Trv2c)  #相机坐标系转到激光雷达坐标系
+        if remove_unknown:  #默认False
             remove_mask = difficulty == -1
             """
             gt_boxes_remove = gt_boxes[remove_mask]
@@ -164,7 +164,7 @@ def prep_pointcloud(input_dict,
                 # gt_names = gt_names[gt_boxes_mask].tolist()
                 gt_names = np.concatenate([gt_names, sampled_gt_names], axis=0)
                 # gt_names += [s["name"] for s in sampled]
-                gt_boxes = np.concatenate([gt_boxes, sampled_gt_boxes])
+                gt_boxes = np.concatenate([gt_boxes, sampled_gt_boxes])  #数据扩增
                 gt_boxes_mask = np.concatenate(
                     [gt_boxes_mask, sampled_gt_masks], axis=0)
                 if group_ids is not None:
@@ -266,15 +266,15 @@ def prep_pointcloud(input_dict,
     if anchor_area_threshold >= 0:
         coors = coordinates
         dense_voxel_map = box_np_ops.sparse_sum_for_anchors_mask(
-            coors, tuple(grid_size[::-1][1:]))
+            coors, tuple(grid_size[::-1][1:]))          #体素密度图
         dense_voxel_map = dense_voxel_map.cumsum(0)
         dense_voxel_map = dense_voxel_map.cumsum(1)
         anchors_area = box_np_ops.fused_get_anchors_area(
             dense_voxel_map, anchors_bv, voxel_size, pc_range, grid_size)
-        anchors_mask = anchors_area > anchor_area_threshold
+        anchors_mask = anchors_area > anchor_area_threshold  #体素密度图上面积较大
         # example['anchors_mask'] = anchors_mask.astype(np.uint8)
         example['anchors_mask'] = anchors_mask
-    if generate_bev:
+    if generate_bev: #默认False
         bev_vxsize = voxel_size.copy()
         bev_vxsize[:2] /= 2
         bev_vxsize[2] *= 2

@@ -113,7 +113,7 @@ class DataBaseSamplerV2:
             sample_num_per_class.append(sampled_num)
 
         sampled_groups = self._sample_classes
-        if self._use_group_sampling:
+        if self._use_group_sampling:  #默认False
             assert gt_group_ids is not None
             sampled_groups = []
             sample_num_per_class = []
@@ -133,7 +133,7 @@ class DataBaseSamplerV2:
                 if self._use_group_sampling:
                     sampled_cls = self.sample_group(class_name, sampled_num,
                                                        avoid_coll_boxes, total_group_ids)
-                else:
+                else:  #进入这个函数
                     sampled_cls = self.sample_class_v2(class_name, sampled_num,
                                                        avoid_coll_boxes)
 

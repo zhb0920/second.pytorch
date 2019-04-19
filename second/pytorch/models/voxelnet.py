@@ -241,7 +241,7 @@ class SparseMiddleExtractor(nn.Module):
             Linear = change_default_args(bias=True)(nn.Linear)
         sparse_shape = np.array(output_shape[1:4]) + [1, 0, 0]
         # sparse_shape[0] = 11
-        print(sparse_shape)
+        print(sparse_shape)   #[ 11 400 352]
         self.scn_input = scn.InputLayer(3, sparse_shape.tolist())
         self.voxel_output_shape = output_shape
         middle_layers = []
@@ -485,7 +485,7 @@ class RPN(nn.Module):
             self.conv_dir_cls = nn.Conv2d(
                 sum(num_upsample_filters), num_anchor_per_loc * 2, 1)
 
-    def forward(self, x, bev=None):
+    def forward(self, x, bev=None):   #输入x=torch.Size([4, 128, 200, 176])
         x = self.block1(x)
         up1 = self.deconv1(x)
         if self._use_bev:
@@ -497,18 +497,18 @@ class RPN(nn.Module):
         x = self.block3(x)
         up3 = self.deconv3(x)
         x = torch.cat([up1, up2, up3], dim=1)
-        box_preds = self.conv_box(x)
-        cls_preds = self.conv_cls(x)
+        box_preds = self.conv_box(x)   #[4, 14, 200, 176]
+        cls_preds = self.conv_cls(x)   #[4, 2, 200, 176]
         # [N, C, y(H), x(W)]
-        box_preds = box_preds.permute(0, 2, 3, 1).contiguous()
+        box_preds = box_preds.permute(0, 2, 3, 1).contiguous()  #torch.Size([4, 200, 176, 14])
         cls_preds = cls_preds.permute(0, 2, 3, 1).contiguous()
         ret_dict = {
             "box_preds": box_preds,
             "cls_preds": cls_preds,
         }
         if self._use_direction_classifier:
-            dir_cls_preds = self.conv_dir_cls(x)
-            dir_cls_preds = dir_cls_preds.permute(0, 2, 3, 1).contiguous()
+            dir_cls_preds = self.conv_dir_cls(x)  #torch.Size([4, 4, 200, 176])
+            dir_cls_preds = dir_cls_preds.permute(0, 2, 3, 1).contiguous() #[4, 200, 176, 4]
             ret_dict["dir_cls_preds"] = dir_cls_preds
         return ret_dict
 
@@ -693,8 +693,8 @@ class VoxelNet(nn.Module):
         cls_preds = preds_dict["cls_preds"]
         self._total_forward_time += time.time() - t
         if self.training:
-            labels = example['labels']
-            reg_targets = example['reg_targets']
+            labels = example['labels']  #torch.Size([4, 70400])
+            reg_targets = example['reg_targets']    #torch.Size([4, 70400, 7])
 
             cls_weights, reg_weights, cared = prepare_loss_weights(
                 labels,
