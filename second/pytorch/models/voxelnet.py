@@ -485,7 +485,7 @@ class RPN(nn.Module):
             self.conv_dir_cls = nn.Conv2d(
                 sum(num_upsample_filters), num_anchor_per_loc * 2, 1)
 
-    def forward(self, x, bev=None):   #输入x=torch.Size([4, 128, 200, 176])
+    def forward(self, x, bev=None):   #输入x=torch.Size([4, 128, 400, 352])
         x = self.block1(x)
         up1 = self.deconv1(x)
         if self._use_bev:
@@ -693,14 +693,14 @@ class VoxelNet(nn.Module):
         cls_preds = preds_dict["cls_preds"]
         self._total_forward_time += time.time() - t
         if self.training:
-            labels = example['labels']  #torch.Size([4, 70400])
+            labels = example['labels']              #torch.Size([4, 70400])
             reg_targets = example['reg_targets']    #torch.Size([4, 70400, 7])
 
             cls_weights, reg_weights, cared = prepare_loss_weights(
                 labels,
                 pos_cls_weight=self._pos_cls_weight,
                 neg_cls_weight=self._neg_cls_weight,
-                loss_norm_type=self._loss_norm_type,
+                loss_norm_type=self._loss_norm_type,   #loss归一化类型
                 dtype=voxels.dtype)
             cls_targets = labels * cared.type_as(labels)
             cls_targets = cls_targets.unsqueeze(-1)
