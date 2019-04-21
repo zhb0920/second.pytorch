@@ -263,6 +263,7 @@ class SparseMiddleExtractor(nn.Module):
         middle_layers.append(
             scn.BatchNormReLU(num_filters[-1], eps=1e-3, momentum=0.99))
         # assert len(num_filters_down2) > 0
+        '''
         if len(num_filters_down1) == 0:
             num_filters = [num_filters[-1]] + num_filters_down2
         else:
@@ -280,6 +281,7 @@ class SparseMiddleExtractor(nn.Module):
                 bias=False))
         middle_layers.append(
             scn.BatchNormReLU(num_filters[-1], eps=1e-3, momentum=0.99))
+        '''
         middle_layers.append(scn.SparseToDense(3, num_filters[-1]))
         self.middle_conv = Sequential(*middle_layers)
 
