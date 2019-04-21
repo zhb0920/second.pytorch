@@ -4,12 +4,7 @@
     <bookmark url="file://$PROJECT_DIR$/second/pytorch/train.py" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="c86ffc30-94c8-445c-b9c9-ca5fd24f892d" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/second/configs/car.config" beforeDir="false" afterPath="$PROJECT_DIR$/second/configs/car.config" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/second/pytorch/models/voxelnet.py" beforeDir="false" afterPath="$PROJECT_DIR$/second/pytorch/models/voxelnet.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/train.sh" beforeDir="false" afterPath="$PROJECT_DIR$/train.sh" afterDir="false" />
-    </list>
+    <list default="true" id="c86ffc30-94c8-445c-b9c9-ca5fd24f892d" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -36,18 +31,9 @@
   <component name="FileEditorManager">
     <leaf>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/train.sh">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="48">
-              <caret line="2" column="126" selection-start-line="2" selection-start-column="126" selection-end-line="2" selection-end-column="126" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/second/pytorch/models/voxelnet.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="136">
+            <state relative-caret-position="280">
               <caret line="263" column="48" lean-forward="true" selection-start-line="263" selection-start-column="48" selection-end-line="263" selection-end-column="48" />
             </state>
           </provider>
@@ -291,7 +277,7 @@
       <workItem from="1555574006491" duration="15007000" />
       <workItem from="1555637388710" duration="30942000" />
       <workItem from="1555832018092" duration="1355000" />
-      <workItem from="1555833735032" duration="1900000" />
+      <workItem from="1555833735032" duration="3356000" />
     </task>
     <task id="LOCAL-00001" summary="0420">
       <created>1555730053291</created>
@@ -304,7 +290,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="72009000" />
+    <option name="totallyTimeSpent" value="73465000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -729,17 +715,17 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/second/pytorch/models/voxelnet.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="136">
-          <caret line="263" column="48" lean-forward="true" selection-start-line="263" selection-start-column="48" selection-end-line="263" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/train.sh">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="48">
           <caret line="2" column="126" selection-start-line="2" selection-start-column="126" selection-end-line="2" selection-end-column="126" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/second/pytorch/models/voxelnet.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="280">
+          <caret line="263" column="48" lean-forward="true" selection-start-line="263" selection-start-column="48" selection-end-line="263" selection-end-column="48" />
         </state>
       </provider>
     </entry>
