@@ -1,10 +1,10 @@
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 import pathlib
 import pickle
 import shutil
 import time
 from functools import partial
+
 import fire
 import numpy as np
 import torch
@@ -21,7 +21,6 @@ from second.pytorch.builder import (box_coder_builder, input_reader_builder,
                                       second_builder)
 from second.utils.eval import get_coco_eval_result, get_official_eval_result
 from second.utils.progress_bar import ProgressBar
-
 
 
 def _get_pos_neg_loss(cls_loss, labels):
@@ -99,6 +98,8 @@ def train(config_path,
 
     model_dir = pathlib.Path(model_dir)
     model_dir.mkdir(parents=True, exist_ok=True)
+    eval_checkpoint_dir = model_dir / 'eval_checkpoints'
+    eval_checkpoint_dir.mkdir(parents=True, exist_ok=True)
     if result_path is None:
         result_path = model_dir / 'results'
     config_file_bkp = "pipeline.config"
@@ -107,7 +108,6 @@ def train(config_path,
         proto_str = f.read()
         text_format.Merge(proto_str, config)
     shutil.copyfile(config_path, str(model_dir / config_file_bkp))
-
     input_cfg = config.train_input_reader
     eval_input_cfg = config.eval_input_reader
     model_cfg = config.model.second
@@ -121,23 +121,17 @@ def train(config_path,
     ######################
     # BUILD TARGET ASSIGNER
     ######################
-    bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]  #检测范围
+    bv_range = voxel_generator.point_cloud_range[[0, 1, 3, 4]]
     box_coder = box_coder_builder.build(model_cfg.box_coder)
-    target_assigner_cfg = model_cfg.target_assigner 
+    target_assigner_cfg = model_cfg.target_assigner
     target_assigner = target_assigner_builder.build(target_assigner_cfg,
                                                     bv_range, box_coder)
     ######################
     # BUILD NET
     ######################
-    center_limit_range = model_cfg.post_center_limit_range  # [0, -40, -5.0, 70.4, 40, 5.0] in car.config
+    center_limit_range = model_cfg.post_center_limit_range
     net = second_builder.build(model_cfg, voxel_generator, target_assigner)
-    device = None
-    if torch.cuda.is_available():
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
-
-    net.to(device=device)
+    net.cuda()
     # net_train = torch.nn.DataParallel(net).cuda()
     print("num_trainable parameters:", len(list(net.parameters())))
     # for n, p in net.named_parameters():
@@ -154,7 +148,7 @@ def train(config_path,
         net.metrics_to_float()
         net.convert_norm_to_float(net)
     optimizer = optimizer_builder.build(optimizer_cfg, net.parameters())
-    if train_cfg.enable_mixed_precision:   #混合精度
+    if train_cfg.enable_mixed_precision:
         loss_scale = train_cfg.loss_scale_factor
         mixed_optimizer = torchplus.train.MixedPrecisionWrapper(
             optimizer, loss_scale)
@@ -185,7 +179,7 @@ def train(config_path,
         voxel_generator=voxel_generator,
         target_assigner=target_assigner)
 
-    def _worker_init_fn(worker_id):  #生成随机种子
+    def _worker_init_fn(worker_id):
         time_seed = np.array(time.time(), dtype=np.int32)
         np.random.seed(time_seed + worker_id)
         print(f"WORKER {worker_id} seed:", np.random.get_state()[1][0])
@@ -214,12 +208,12 @@ def train(config_path,
     logf = open(log_path, 'a')
     logf.write(proto_str)
     logf.write("\n")
-    summary_dir = model_dir / 'summary' #tensorboard记录
+    summary_dir = model_dir / 'summary'
     summary_dir.mkdir(parents=True, exist_ok=True)
     writer = SummaryWriter(str(summary_dir))
 
     total_step_elapsed = 0
-    remain_steps = train_cfg.steps - net.get_global_step() #剩余步数
+    remain_steps = train_cfg.steps - net.get_global_step()
     t = time.time()
     ckpt_start_time = t
 
@@ -240,13 +234,13 @@ def train(config_path,
                 lr_scheduler.step()
                 try:
                     example = next(data_iter)
-                except StopIteration: 
+                except StopIteration:
                     print("end epoch")
                     if clear_metrics_every_epoch:
                         net.clear_metrics()
                     data_iter = iter(dataloader)
                     example = next(data_iter)
-                example_torch = example_convert_to_torch(example, float_dtype, device)
+                example_torch = example_convert_to_torch(example, float_dtype)
 
                 batch_size = example["anchors"].shape[0]
 
@@ -267,9 +261,9 @@ def train(config_path,
                 if train_cfg.enable_mixed_precision:
                     loss *= loss_scale
                 loss.backward()
-                torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0) #解决梯度爆炸
+                torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
                 mixed_optimizer.step()
-                mixed_optimizer.zero_grad() #梯度清零
+                mixed_optimizer.zero_grad()
                 net.update_global_step()
                 net_metrics = net.update_metrics(cls_loss_reduced,
                                                  loc_loss_reduced, cls_preds,
@@ -312,7 +306,6 @@ def train(config_path,
                     metrics["lr"] = float(
                         mixed_optimizer.param_groups[0]['lr'])
                     metrics["image_idx"] = example['image_idx'][0]
-                    #tensorboard summary
                     flatted_metrics = flat_nested_json_dict(metrics)
                     flatted_summarys = flat_nested_json_dict(metrics, "/")
                     for k, v in flatted_summarys.items():
@@ -337,13 +330,17 @@ def train(config_path,
                     print(log_str, file=logf)
                     print(log_str)
                 ckpt_elasped_time = time.time() - ckpt_start_time
-                if ckpt_elasped_time > train_cfg.save_checkpoints_secs:  #超过半小时保存
+                if ckpt_elasped_time > train_cfg.save_checkpoints_secs:
                     torchplus.train.save_models(model_dir, [net, optimizer],
                                                 net.get_global_step())
                     ckpt_start_time = time.time()
             total_step_elapsed += steps
             torchplus.train.save_models(model_dir, [net, optimizer],
                                         net.get_global_step())
+
+            # Ensure that all evaluation points are saved forever
+            torchplus.train.save_models(eval_checkpoint_dir, [net, optimizer], net.get_global_step(), max_to_keep=100)
+
             net.eval()
             result_path_step = result_path / f"step_{net.get_global_step()}"
             result_path_step.mkdir(parents=True, exist_ok=True)
@@ -383,26 +380,32 @@ def train(config_path,
             print(
                 f'generate label finished({sec_per_ex:.2f}/s). start eval:',
                 file=logf)
-            gt_annos = [            #groundtruth
+            gt_annos = [
                 info["annos"] for info in eval_dataset.dataset.kitti_infos
             ]
             if not pickle_result:
                 dt_annos = kitti.get_label_annos(result_path_step)
-            if device.type == 'cpu':
-                print("Evaluation only support gpu.")
-            else:
-                result = get_official_eval_result(gt_annos, dt_annos, class_names)   #评估结果
-                print(result, file=logf)
-                print(result)
-                writer.add_text('eval_result', result, global_step)
-                result = get_coco_eval_result(gt_annos, dt_annos, class_names)
-                print(result, file=logf)
-                print(result)
-                writer.add_text('eval_result', result, global_step)
+            result, mAPbbox, mAPbev, mAP3d, mAPaos = get_official_eval_result(gt_annos, dt_annos, class_names,
+                                                                              return_data=True)
+            print(result, file=logf)
+            print(result)
+            writer.add_text('eval_result', result, global_step)
+
+            for i, class_name in enumerate(class_names):
+                writer.add_scalar('bev_ap:{}'.format(class_name), mAPbev[i, 1, 0], global_step)
+                writer.add_scalar('3d_ap:{}'.format(class_name), mAP3d[i, 1, 0], global_step)
+                writer.add_scalar('aos_ap:{}'.format(class_name), mAPaos[i, 1, 0], global_step)
+            writer.add_scalar('bev_map', np.mean(mAPbev[:, 1, 0]), global_step)
+            writer.add_scalar('3d_map', np.mean(mAP3d[:, 1, 0]), global_step)
+            writer.add_scalar('aos_map', np.mean(mAPaos[:, 1, 0]), global_step)
+
+            result = get_coco_eval_result(gt_annos, dt_annos, class_names)
+            print(result, file=logf)
+            print(result)
             if pickle_result:
                 with open(result_path_step / "result.pkl", 'wb') as f:
                     pickle.dump(dt_annos, f)
-            
+            writer.add_text('eval_result', result, global_step)
             net.train()
     except Exception as e:
         torchplus.train.save_models(model_dir, [net, optimizer],
@@ -453,7 +456,7 @@ def _predict_kitti_to_file(net,
                     if (np.any(box_lidar[:3] < limit_range[:3])
                             or np.any(box_lidar[:3] > limit_range[3:])):
                         continue
-                bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])  #越界处理
+                bbox[2:] = np.minimum(bbox[2:], image_shape[::-1])
                 bbox[:2] = np.maximum(bbox[:2], [0, 0])
                 result_dict = {
                     'name': class_names[int(label)],
@@ -583,12 +586,7 @@ def evaluate(config_path,
                                                     bv_range, box_coder)
 
     net = second_builder.build(model_cfg, voxel_generator, target_assigner)
-    device = None
-    if torch.cuda.is_available():
-        device = torch.device('cuda')
-    else:
-        device = torch.device('cpu')
-    net.to(device=device)
+    net.cuda()
     if train_cfg.enable_mixed_precision:
         net.half()
         net.metrics_to_float()
@@ -629,7 +627,7 @@ def evaluate(config_path,
     bar.start(len(eval_dataset) // input_cfg.batch_size + 1)
 
     for example in iter(eval_dataloader):
-        example = example_convert_to_torch(example, float_dtype, device)
+        example = example_convert_to_torch(example, float_dtype)
         if pickle_result:
             dt_annos += predict_kitti_to_anno(
                 net, example, class_names, center_limit_range,
@@ -644,8 +642,6 @@ def evaluate(config_path,
 
     print(f"avg forward time per example: {net.avg_forward_time:.3f}")
     print(f"avg postprocess time per example: {net.avg_postprocess_time:.3f}")
-    if device.type == 'cpu':
-        print("Evaluation only support gpu. exit.")
     if not predict_test:
         gt_annos = [info["annos"] for info in eval_dataset.dataset.kitti_infos]
         if not pickle_result:

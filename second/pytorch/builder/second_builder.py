@@ -50,7 +50,7 @@ def build(model_cfg: second_pb2.VoxelNet, voxel_generator,
     direction_loss_weight = model_cfg.direction_loss_weight
 
     net = VoxelNet(
-        dense_shape, #[1,10,400,352,128]
+        dense_shape,
         num_class=num_class,
         vfe_class_name=model_cfg.voxel_feature_extractor.module_class_name,
         vfe_num_filters=vfe_num_filters,
@@ -90,5 +90,7 @@ def build(model_cfg: second_pb2.VoxelNet, voxel_generator,
         loc_loss_ftor=loc_loss_ftor,
         cls_loss_ftor=cls_loss_ftor,
         target_assigner=target_assigner,
+        voxel_size=voxel_generator.voxel_size,
+        pc_range=voxel_generator.point_cloud_range
     )
     return net

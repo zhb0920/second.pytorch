@@ -282,7 +282,7 @@ class SigmoidFocalClassificationLoss(Loss):
       class_indices: (Optional) A 1-D integer tensor of class indices.
         If provided, computes loss only for the specified class indices.
 
-      Returns:
+    Returns:
       loss: a float tensor of shape [batch_size, num_anchors, num_classes]
         representing the value of the loss function.
     """
@@ -297,7 +297,7 @@ class SigmoidFocalClassificationLoss(Loss):
            ((1 - target_tensor) * (1 - prediction_probabilities)))
     modulating_factor = 1.0
     if self._gamma:
-      modulating_factor = torch.pow(1.0 - p_t, self._gamma)  
+      modulating_factor = torch.pow(1.0 - p_t, self._gamma)
     alpha_weight_factor = 1.0
     if self._alpha is not None:
       alpha_weight_factor = (target_tensor * self._alpha +
@@ -382,6 +382,7 @@ class WeightedSoftmaxClassificationLoss(Loss):
 
     """
     self._logit_scale = logit_scale
+
   def _compute_loss(self, prediction_tensor, target_tensor, weights):
     """Compute loss function.
 

@@ -50,9 +50,9 @@ def build(input_reader_config,
     if not isinstance(input_reader_config, input_reader_pb2.InputReader):
         raise ValueError('input_reader_config not of type '
                          'input_reader_pb2.InputReader.')
-    generate_bev = model_config.use_bev #false
-    without_reflectivity = model_config.without_reflectivity #false in car.config
-    num_point_features = model_config.num_point_features #4
+    generate_bev = model_config.use_bev
+    without_reflectivity = model_config.without_reflectivity
+    num_point_features = model_config.num_point_features
     out_size_factor = model_config.rpn.layer_strides[0] // model_config.rpn.upsample_strides[0]
 
     cfg = input_reader_config
@@ -85,6 +85,7 @@ def build(input_reader_config,
         gt_loc_noise_std=list(cfg.groundtruth_localization_noise_std),
         global_rotation_noise=list(cfg.global_rotation_uniform_noise),
         global_scaling_noise=list(cfg.global_scaling_uniform_noise),
+        global_loc_noise_std=(0.2, 0.2, 0.2),
         global_random_rot_range=list(
             cfg.global_random_rotation_range_per_object),
         db_sampler=db_sampler,

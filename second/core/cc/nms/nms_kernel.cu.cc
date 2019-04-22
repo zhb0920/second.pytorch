@@ -6,6 +6,7 @@
 // ------------------------------------------------------------------
 #include <vector>
 #include <iostream>
+#include <boost/geometry.hpp>
 #include <cuda_runtime.h>
 
 #define CUDA_CHECK(condition)                               \

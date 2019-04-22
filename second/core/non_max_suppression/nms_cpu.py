@@ -5,10 +5,7 @@ from second.utils.buildtools.pybind11_build import load_pb11
 from second.utils.find import find_cuda_device_arch
 import numba
 import numpy as np
-'''
-nvcc -std=c++11 -c -o ../cc/nms/nms_kernel.cu.o ../cc/nms/nms_kernel.cu.cc -I/usr/local/cuda/include -x cu -Xcompiler -fPIC -arch=sm_61 --expt-relaxed-constexpr 
-g++ -std=c++11 -shared -o /home/yy/deeplearning/second.pytorch/second/core/non_max_suppression/nms.so ../cc/nms/nms_kernel.cu.o ../cc/nms/nms.cc -I/usr/local/cuda/include -fPIC -O3 -I/home/yy/anaconda3/include/python3.6m -I/home/yy/.local/include/python3.6m -L/usr/local/cuda/lib64 -lcublas -lcudart 
-'''
+
 try:
     from second.core.non_max_suppression.nms import (
         non_max_suppression_cpu, rotate_non_max_suppression_cpu)

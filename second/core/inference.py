@@ -7,7 +7,7 @@ from google.protobuf import text_format
 from second.data.preprocess import merge_second_batch, prep_pointcloud
 from second.protos import pipeline_pb2
 
-#用于kittiviewer
+
 class InferenceContext:
     def __init__(self):
         self.config = None
