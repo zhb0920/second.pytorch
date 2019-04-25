@@ -737,7 +737,7 @@ class VoxelNet(nn.Module):
                 dir_loss = self._dir_loss_ftor(
                     dir_logits, dir_targets, weights=weights)
                 dir_loss = dir_loss.sum() / batch_size_dev
-                loss += dir_loss * self._direction_loss_weight
+                loss += dir_loss * self._direction_loss_weight*0
 
             return {
                 "loss": loss,
