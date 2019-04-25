@@ -47,7 +47,7 @@ model: {
     encode_rad_error_by_sin: true
 
     use_direction_classifier: true
-    direction_loss_weight: 0.2
+    direction_loss_weight: 0
     use_aux_classifier: false
     # Loss
     pos_class_weight: 1.0
@@ -78,7 +78,7 @@ model: {
            sizes: [1.6, 3.9, 1.56] # wlh
            strides: [0.32, 0.32, 0.0] # if generate only 1 z_center, z_stride will be ignored
            offsets: [0.16, -39.52, -1.78] # origin_offset + strides / 2
-           rotations: [0, 1.57] # 0, pi/2
+           rotations: [0.5,1.57,2.6] # 0, pi/2
            matched_threshold : 0.6
            unmatched_threshold : 0.45
          }
@@ -99,7 +99,7 @@ train_input_reader: {
   record_file_path: "/data/sets/kitti_second/kitti_train.tfrecord"
   class_names: ["Car"]
   max_num_epochs : 160
-  batch_size: 1
+  batch_size: 4
   prefetch_size : 25
   max_number_of_voxels: 12000
   shuffle_points: true
@@ -174,7 +174,7 @@ train_config: {
 eval_input_reader: {
   record_file_path: "/data/sets/kitti_second/kitti_val.tfrecord"
   class_names: ["Car"]
-  batch_size: 1
+  batch_size: 4
   max_num_epochs : 160
   prefetch_size : 25
   max_number_of_voxels: 12000
